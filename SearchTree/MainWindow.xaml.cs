@@ -157,6 +157,7 @@ namespace SearchTree
 
 
 		//TODO	implement Tasks, properly implement Async/await
+		//<as
 		async void searcher(string directory, Regex reg)
 		{
 			await Task.Run(() =>
@@ -294,6 +295,12 @@ namespace SearchTree
 				string s = tvi.Tag == null ? tvi.Header.ToString() : "/Select, \"" + tvi.Tag.ToString() + "\\" + tvi.Header.ToString() + "\"";
 				System.Diagnostics.Process.Start("explorer.exe", s);
 			}
+		}
+
+		//TODO	make checkbox actually do smth
+		private void CheckBox_Checked(object sender, RoutedEventArgs e)
+		{
+			
 		}
 
 		protected override void OnClosing(System.ComponentModel.CancelEventArgs e)

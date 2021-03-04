@@ -25,7 +25,7 @@
 		<Label Content="Файлов просмотрено:" HorizontalAlignment="Left" Margin="10,94,0,0" VerticalAlignment="Top"/>
 		<Label x:Name="labelFound" Content="0" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="119,69,0,0" Width="383"/>
 		<Label x:Name="labelCount" Content="0" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="147,94,0,0" Width="355"/>
-		<CheckBox Content="Regex?" Margin="507,47,10,0" VerticalAlignment="Top" Height="20" RenderTransformOrigin="0.493,0.65"/>
+		<CheckBox Content="Regex?" Margin="507,47,10,0" VerticalAlignment="Top" Height="20" RenderTransformOrigin="0.493,0.65" Checked="CheckBox_Checked"/>
 
 	</Grid>
 </Window>
