@@ -14,5 +14,5 @@ App tasks:
 - [x] Files counters; 
 - [ ] Implement stopwatch; 
 - [ ] Show current search folder;
-- [ ] Exclude any window lags/blinks/drops
-- [ ] Exceptions?
+- [ ] Exclude any window lags/blinks/drops;
+- [ ] Think about new funcs;
