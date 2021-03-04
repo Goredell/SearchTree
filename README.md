@@ -1,6 +1,6 @@
 # SearchTree
 App tasks: 
-- [x] Search for files in specified directory chosen using textbox or browse button :heavy_check_mark; 
+- [x] Search for files in specified directory chosen using textbox or browse button; 
 - - [ ] \(Optional) Use many directories;
 - - [x] Show all files in a TreeView;
 - - - [x] \(Optional) Open file directory on doubleclick;
