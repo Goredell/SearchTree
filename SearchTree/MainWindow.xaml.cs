@@ -68,6 +68,8 @@ namespace SearchTree
 
 		}
 
+		//TODO	Code readability
+		//TODO	implement mmvm pattern
 		private async void Search_button_Click(object sender, RoutedEventArgs e)
 		{
 			Thread.CurrentThread.Name = "Main";
@@ -212,6 +214,8 @@ namespace SearchTree
 			});
 		}
 
+		//CHECK	misuse of dispatcher
+		//CHECK	code readability and optimisation
 		void build_starter(ItemsControl root, List<string> path)
 		{
 			if (path.Count() == 0)
@@ -237,6 +241,8 @@ namespace SearchTree
 					}
 			});
 		}
+
+		//CHECK	code readability and optimisation
 		TreeViewItem buildpath(TreeViewItem Node, string path)
 		{
 			if (path == "")
@@ -295,6 +301,8 @@ namespace SearchTree
 			base.OnClosing(e);
 		}
 
+
+		//TODO	pause/continue button shuold stop/cont current search
 		private void Pause_Click(object sender, RoutedEventArgs e)
 		{
 			Pause = !Pause;
