@@ -70,6 +70,7 @@ namespace SearchTree
 
 		//TODO	Code readability
 		//TODO	implement mmvm pattern
+		//TODO	implement Tasks and stopwatch, properly implement Async/await
 		private async void Search_button_Click(object sender, RoutedEventArgs e)
 		{
 			Thread.CurrentThread.Name = "Main";
@@ -139,7 +140,7 @@ namespace SearchTree
 				if (t.Status == TaskStatus.RanToCompletion)
 				{
 					timer.Stop();
-					//stopWatch.Stop();
+					stopWatch.Stop();
 				}
 			}
 		}
@@ -154,6 +155,8 @@ namespace SearchTree
 			CommandManager.InvalidateRequerySuggested();
 		}
 
+
+		//TODO	implement Tasks, properly implement Async/await
 		async void searcher(string directory, Regex reg)
 		{
 			await Task.Run(() =>
@@ -216,6 +219,7 @@ namespace SearchTree
 
 		//CHECK	misuse of dispatcher
 		//CHECK	code readability and optimisation
+		//TODO	implement Tasks
 		void build_starter(ItemsControl root, List<string> path)
 		{
 			if (path.Count() == 0)
@@ -243,6 +247,7 @@ namespace SearchTree
 		}
 
 		//CHECK	code readability and optimisation
+		//TODO	implement Tasks
 		TreeViewItem buildpath(TreeViewItem Node, string path)
 		{
 			if (path == "")
