@@ -81,29 +81,25 @@ namespace SearchTree
 			labelCount.Content = count;
 			string search = SearchBox.Text,
 				   direct = DirectoryBox.Text;
-			var tasks = new List<Task>();
-			foreach (var task in tasks)
-			{
-				task.Dispose();
-			}
 			SearchTree.Items.Clear();
 
+			if (!Directory.Exists(direct))
+			{
+				System.Windows.MessageBox.Show("Directory does not exist", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+				return;
+			}
 
+			//timer
 			var timer = new System.Windows.Threading.DispatcherTimer();
 			timer.Tick += new EventHandler(Timer_Tick);
 			timer.Interval = new TimeSpan(0, 0, 0, 0, 1);
 			timer.Start();
 			stopWatch.Start();
 
-			foreach (string drive in Directory.GetLogicalDrives())
-			{
-				TreeViewItem item = new TreeViewItem();
-				item.Header = drive.Substring(0, drive.IndexOf("\\"));
-				//item.Tag = ;
-				SearchTree.Items.Add(item);
-			}
+			//drives
+			GetDrives();
 
-
+			//regex
 			Regex reg = new Regex("");
 			try
 			{
@@ -115,33 +111,21 @@ namespace SearchTree
 				return;
 			}
 
-			tasks.Add(Task.Run(() =>
+			await Task.Run(() =>
 			{
 				var files = Directory.GetFiles(direct)
 						 .Where(path => reg.IsMatch(path))
 						 .ToList();
 
-				build_starter(SearchTree, files);
+				BuildStarter(SearchTree, files);
 				var dir = Directory.GetDirectories(direct);
 				foreach (var di in dir)
-					searcher(di, reg);
+					Searcher(di, reg);
 
-			}));
+			});
 
-			Task t = Task.WhenAll(tasks.ToArray());
-			try
-			{
-				await t;
-			}
-			catch { }
-			finally
-			{
-				if (t.Status == TaskStatus.RanToCompletion)
-				{
-					timer.Stop();
-					//stopWatch.Stop();
-				}
-			}
+			timer.Stop();
+			stopWatch.Stop();
 		}
 		private void Timer_Tick(object sender, EventArgs e)
 		{
@@ -154,69 +138,46 @@ namespace SearchTree
 			CommandManager.InvalidateRequerySuggested();
 		}
 
-		async void searcher(string directory, Regex reg)
+		void Searcher(string directory, Regex reg)
 		{
-			await Task.Run(() =>
+			//Поиск файлов и директорий в текущей директории
+			List<string> listOfFiles = new List<string>();
+			try
 			{
-				//Передать текущую директорию поиска
-				//this.Dispatcher.Invoke(() =>
-				//{
-				//    this.searchLabel.Content = directory;
-				//});
-
-				//Поиск файлов и директорий в текущей директории
-				List<string> listOfFiles = new List<string>();
-				try
+				listOfFiles = Directory.GetFiles(directory).ToList();
+				if (listOfFiles.Count > 0)
 				{
-					listOfFiles = Directory.GetFiles(directory).ToList();
+					int cnt = listOfFiles.Count;
+					listOfFiles = listOfFiles.Where(path => reg.IsMatch(path))
+									.ToList();
+
+					CountEm(cnt, listOfFiles.Count());
+
 					if (listOfFiles.Count > 0)
 					{
-						count += listOfFiles.Count;
-						strcount = count.ToString();
-
-						listOfFiles = listOfFiles.Where(path => reg.IsMatch(path))
-										.ToList();
-						found += listOfFiles.Count();
-						strfound = found.ToString();
-						this.Dispatcher.Invoke(() =>
-						{
-							//Данные о просмотренных файлах
-							labelCount.Content = strcount;
-						});
-						if (listOfFiles.Count > 0)
-						{
-							this.Dispatcher.Invoke(() =>
-							{
-								//Данные о найденных файлах
-								labelFound.Content = strfound;
-								//Построить и отобразить древо поиска
-							});
-							build_starter(SearchTree, listOfFiles);
-						}
+						BuildStarter(SearchTree, listOfFiles);
 					}
 				}
-				//Отлов исключений на отсутсвие доступа
-				catch (System.UnauthorizedAccessException) { }
-			});
+			}
+			//Отлов исключений на отсутсвие доступа
+			catch (System.UnauthorizedAccessException) { }
 
-			await Task.Run(() =>
+			//Список директорий в этой директории
+			string[] dir = { };
+			try { dir = Directory.GetDirectories(directory); }
+			//Отлов исключений на отсутсвие доступа
+			catch (System.UnauthorizedAccessException) { }
+
+
+			foreach (var di in dir)
 			{
-				//
-				//Список директорий в этой директории
-				string[] dir = { };
-				try { dir = Directory.GetDirectories(directory); }
-				//Отлов исключений на отсутсвие доступа
-				catch (System.UnauthorizedAccessException) { }
-
-
-				foreach (var di in dir)
-					searcher(di, reg);
-			});
+				Searcher(di, reg);
+			}
 		}
 
 		//CHECK	misuse of dispatcher
 		//CHECK	code readability and optimisation
-		void build_starter(ItemsControl root, List<string> path)
+		void BuildStarter(ItemsControl root, List<string> path)
 		{
 			if (path.Count() == 0)
 				return;
@@ -229,7 +190,7 @@ namespace SearchTree
 			{
 				foreach (TreeViewItem item in root.Items)
 					if (item.Header.ToString() == path[0].Substring(0, strIndex))
-						Node = buildpath(item, path[0].Substring(strIndex + 1));
+						Node = BuildPath(item, path[0].Substring(strIndex + 1));
 
 				if (Node != null)
 					foreach (string name in path)
@@ -243,7 +204,7 @@ namespace SearchTree
 		}
 
 		//CHECK	code readability and optimisation
-		TreeViewItem buildpath(TreeViewItem Node, string path)
+		public TreeViewItem BuildPath(TreeViewItem Node, string path)
 		{
 			if (path == "")
 				return null;
@@ -256,7 +217,8 @@ namespace SearchTree
 
 			foreach (TreeViewItem titem in Node.Items)
 				if (titem.Header.ToString() == name)
-					return buildpath(titem, path.Substring(path.IndexOf("\\") + 1));
+					return BuildPath(titem, path.Substring(path.IndexOf("\\") + 1));
+
 
 
 			TreeViewItem item = new TreeViewItem();
@@ -264,8 +226,7 @@ namespace SearchTree
 			item.Tag = (Node.Tag == null || Node.Tag.ToString() == "" ? "" : Node.Tag + "\\") + Node.Header;
 			Node.Items.Add(item);
 
-			return buildpath(item, path.Substring(path.IndexOf("\\") + 1));
-
+			return BuildPath(item, path.Substring(path.IndexOf("\\") + 1));
 		}
 
 
@@ -313,6 +274,29 @@ namespace SearchTree
 			else
 			{
 				this.Pause_Button.Content = "Pause";
+			}
+		}
+		void CountEm(int cnt, int fnd)
+		{
+			count += cnt;
+			strcount = count.ToString();
+			found += fnd;
+			strfound = found.ToString();
+			this.Dispatcher.Invoke(() =>
+			{
+				//Данные о просмотренных файлах
+				labelCount.Content = strcount;
+				labelFound.Content = strfound;
+			});
+
+		}
+		void GetDrives()
+		{
+			foreach (string drive in Directory.GetLogicalDrives())
+			{
+				TreeViewItem item = new TreeViewItem();
+				item.Header = drive.Substring(0, drive.IndexOf("\\"));
+				SearchTree.Items.Add(item);
 			}
 		}
 
