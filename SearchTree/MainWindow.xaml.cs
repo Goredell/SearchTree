@@ -33,6 +33,8 @@ namespace SearchTree
 		string strfound = "0",
 			strcount = "0";
 		Stopwatch stopWatch = new Stopwatch();
+
+		//TODO Cancelletion token
 		Task maintask;
 		public MainWindow()
 		{
@@ -43,6 +45,7 @@ namespace SearchTree
 				StreamReader reader = new StreamReader("save.dat");
 				saveload[0] = reader.ReadLine();
 				saveload[1] = reader.ReadLine();
+				this.RegexCheckBox.IsChecked = bool.Parse(reader.ReadLine());
 				reader.Close();
 			}
 			catch (Exception)
@@ -73,8 +76,6 @@ namespace SearchTree
 		//TODO	implement mmvm pattern
 		private async void Search_button_Click(object sender, RoutedEventArgs e)
 		{
-			Thread.CurrentThread.Name = "Main";
-
 			this.Pause_Button.IsEnabled = true;
 			found = 0;
 			count = 0;
@@ -100,6 +101,9 @@ namespace SearchTree
 			//drives
 			GetDrives();
 
+			//TODO implement regex/string search
+			//if (!(bool)this.RegexCheckBox.IsChecked)
+
 			//regex
 			Regex reg = new Regex("");
 			try
@@ -112,7 +116,6 @@ namespace SearchTree
 				return;
 			}
 
-			//TODO Cancelletion token
 			maintask = Task.Run(() =>
 			{
 				var files = Directory.GetFiles(direct)
@@ -274,6 +277,7 @@ namespace SearchTree
 			StreamWriter writer = new StreamWriter("save.dat");
 			writer.WriteLine(saveload[0]);
 			writer.WriteLine(saveload[1]);
+			writer.WriteLine(this.RegexCheckBox.IsChecked);
 			writer.Close();
 
 			base.OnClosing(e);
@@ -293,6 +297,7 @@ namespace SearchTree
 				this.Pause_Button.Content = "Pause";
 			}
 		}
+
 		void CountEm(int cnt, int fnd)
 		{
 			count += cnt;
