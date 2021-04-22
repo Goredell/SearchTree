@@ -1,4 +1,5 @@
 # SearchTree
+App is more of a playground for understanding of async/await and tasks. Looks like junkjard.
 App tasks: 
 - [x] Search for files in specified directory chosen using textbox or browse button; 
 - - [ ] \(Optional) Use many directories;
