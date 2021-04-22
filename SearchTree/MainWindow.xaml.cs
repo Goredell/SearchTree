@@ -33,6 +33,7 @@ namespace SearchTree
 		string strfound = "0",
 			strcount = "0";
 		Stopwatch stopWatch = new Stopwatch();
+		Task maintask;
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -111,19 +112,20 @@ namespace SearchTree
 				return;
 			}
 
-			await Task.Run(() =>
+			//TODO Cancelletion token
+			maintask = Task.Run(() =>
 			{
 				var files = Directory.GetFiles(direct)
 						 .Where(path => reg.IsMatch(path))
 						 .ToList();
-
 				BuildStarter(SearchTree, files);
-				var dir = Directory.GetDirectories(direct);
-				foreach (var di in dir)
+				foreach (var di in Directory.GetDirectories(direct))
+				{
 					Searcher(di, reg);
-
+				}
 			});
 
+			await maintask;
 			timer.Stop();
 			stopWatch.Stop();
 		}
@@ -138,24 +140,28 @@ namespace SearchTree
 			CommandManager.InvalidateRequerySuggested();
 		}
 
+		/// <summary>
+		/// Searches for directories and files in current directory
+		/// Adds matches items in TreeView
+		/// </summary>
 		void Searcher(string directory, Regex reg)
 		{
-			//Поиск файлов и директорий в текущей директории
-			List<string> listOfFiles = new List<string>();
+			//Поиск файлов в текущей директории
+			List<string> LOF = new List<string>(); // LOF for List of Files
 			try
 			{
-				listOfFiles = Directory.GetFiles(directory).ToList();
-				if (listOfFiles.Count > 0)
+				LOF = Directory.GetFiles(directory).ToList();
+				if (LOF.Count > 0)
 				{
-					int cnt = listOfFiles.Count;
-					listOfFiles = listOfFiles.Where(path => reg.IsMatch(path))
+					int i = LOF.Count;
+					LOF = LOF.Where(path => reg.IsMatch(path))
 									.ToList();
 
-					CountEm(cnt, listOfFiles.Count());
+					CountEm(i, LOF.Count());
 
-					if (listOfFiles.Count > 0)
+					if (LOF.Count > 0)
 					{
-						BuildStarter(SearchTree, listOfFiles);
+						BuildStarter(SearchTree, LOF);
 					}
 				}
 			}
@@ -164,7 +170,10 @@ namespace SearchTree
 
 			//Список директорий в этой директории
 			string[] dir = { };
-			try { dir = Directory.GetDirectories(directory); }
+			try
+			{
+				dir = Directory.GetDirectories(directory);
+			}
 			//Отлов исключений на отсутсвие доступа
 			catch (System.UnauthorizedAccessException) { }
 
@@ -177,6 +186,9 @@ namespace SearchTree
 
 		//CHECK	misuse of dispatcher
 		//CHECK	code readability and optimisation
+		/// <summary>
+		/// Inserts items found in directory into the appropriate node
+		/// </summary>
 		void BuildStarter(ItemsControl root, List<string> path)
 		{
 			if (path.Count() == 0)
@@ -190,7 +202,7 @@ namespace SearchTree
 			{
 				foreach (TreeViewItem item in root.Items)
 					if (item.Header.ToString() == path[0].Substring(0, strIndex))
-						Node = BuildPath(item, path[0].Substring(strIndex + 1));
+						Node = SearchNode(item, path[0].Substring(strIndex + 1));
 
 				if (Node != null)
 					foreach (string name in path)
@@ -204,7 +216,12 @@ namespace SearchTree
 		}
 
 		//CHECK	code readability and optimisation
-		public TreeViewItem BuildPath(TreeViewItem Node, string path)
+		/// <summary>
+		/// Recursively searches for the given path in the given Node
+		/// Creates missing subitems
+		/// Returns an Item from Treeview corresponding to the given path
+		/// </summary>
+		public TreeViewItem SearchNode(TreeViewItem Node, string path)
 		{
 			if (path == "")
 				return null;
@@ -217,7 +234,7 @@ namespace SearchTree
 
 			foreach (TreeViewItem titem in Node.Items)
 				if (titem.Header.ToString() == name)
-					return BuildPath(titem, path.Substring(path.IndexOf("\\") + 1));
+					return SearchNode(titem, path.Substring(path.IndexOf("\\") + 1));
 
 
 
@@ -226,7 +243,7 @@ namespace SearchTree
 			item.Tag = (Node.Tag == null || Node.Tag.ToString() == "" ? "" : Node.Tag + "\\") + Node.Header;
 			Node.Items.Add(item);
 
-			return BuildPath(item, path.Substring(path.IndexOf("\\") + 1));
+			return SearchNode(item, path.Substring(path.IndexOf("\\") + 1));
 		}
 
 
